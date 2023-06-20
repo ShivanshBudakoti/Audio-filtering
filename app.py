@@ -13,7 +13,6 @@ def index():
 def process_audio():
     # Access the uploaded audio file from the request
     audio_file = request.files['audio']
-
     # Save the audio file locally
     audio_path = 'uploaded_audio.wav'
     audio_file.save(audio_path)
@@ -22,10 +21,22 @@ def process_audio():
     y, sr = librosa.load(audio_path)
 
     # Define frequency ranges to select
-    fmin1 = 35  # minimum frequency for range 1
-    fmax1 = 95  # maximum frequency for range 1
+    fmin1 = 60  # minimum frequency for range 1
+    fmax1 = 160  # maximum frequency for range 1
 
+    args = request.args
+    print(args);
+    animal = int(args.get('value'))
+    print(type (animal));
+    if(animal == 0):
+        fmin1 = 35  # minimum frequency for range 1
+        fmax1 = 95  # maximum frequency for range 1
+    else :
+        fmin1 = 60
+        fmax1 = 160
     # Get spectrogram of audio signal
+
+    print(fmax1,fmin1)
     D = np.abs(librosa.stft(y))
 
     # Define frequency bin indices for the range

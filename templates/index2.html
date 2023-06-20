@@ -11,29 +11,36 @@ body {
 	margin: 0;
 	padding: 0;
 	box-sizing: border-box;
-	font-family: 'Montserrat', sans-serif;
+	background-color: #040714;
+	font-family: Arial, Helvetica, sans-serif;
+
 }
 .form-container {
 	width: 100vw;
-	height: 100vh;
+	/* height: 100vh; */
+	height:600px;
 	/* background-color: #7b2cbf; */
 	display: flex;
    	justify-content: center;
-	align-items: center;
+	border: whitesmoke;
+	margin-top: 80px;
 }
 .upload-files-container {
-	background-color: #f7fff7;
+	background-color: #040714;
+  color:  white;
+  border:2px solid whitesmoke;
+  font-family: Arial, Helvetica, sans-serif;
 	width: 420px;
 	padding: 30px 60px;
 	border-radius: 40px;
 	display: flex;
    	align-items: center;
-   	justify-content: center;
+   	/* justify-content: center; */
 	flex-direction: column;
 	box-shadow: rgba(0, 0, 0, 0.24) 0px 10px 20px, rgba(0, 0, 0, 0.28) 0px 6px 6px;
 }
 .drag-file-area {
-	border: 2px dashed #7b2cbf;
+	border: 2px dashed whitesmoke;
 	border-radius: 40px;
 	margin: 10px 0 15px;
 	padding: 30px 50px;
@@ -51,7 +58,7 @@ body {
 	font-size: 19px;
 }
 .drag-file-area label .browse-files-text {
-	color: #7b2cbf;
+	color:white;
 	font-weight: bolder;
 	cursor: pointer;
 }
@@ -63,7 +70,7 @@ body {
 	/* opacity: 0; */
 }
 .cannot-upload-message {
-	background-color: #ffc6c4;
+	background-color:white;
 	font-size: 17px;
 	display: flex;
 	align-items: center;
@@ -86,7 +93,7 @@ body {
 }
 .file-block {
 	color: #f7fff7;
-	background-color: #7b2cbf;
+	background-color:white;
   	transition: all 1s;
 	width: 390px;
 	position: relative;
@@ -132,7 +139,8 @@ body {
 	font-size: 18px;
 	border: none;
 	border-radius: 20px;
-	margin: 10px;
+	/* margin: 10px; */
+	margin-top:35px ;
 	padding: 7.5px 50px;
 	cursor: pointer;
 }
@@ -142,6 +150,7 @@ body {
     bottom: 180px;
     width:500px;
     margin:auto;
+	/* border: 2px solid white; */
 }
 #wave {
     margin-top: 20px;
@@ -149,30 +158,44 @@ body {
     </style>
 </head>
 <body>
-    <link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined" rel="stylesheet"/>
 <form class="form-container" enctype='multipart/form-data'>
-	<div class="upload-files-container">
-		<div class="drag-file-area">
+	<div class="upload-files-container" ondrop="drop(event);" droppale="true">
+		<div class="drag-file-area"  >
 			<span class="material-icons-outlined upload-icon"> file_upload </span>
 			<h3 class="dynamic-message"> Drag & drop any file here </h3>
 			<label class="label"> or <span class="browse-files"> <input type="file" class="default-file-input" id="audio-upload" accept="audio/*"/> <span class="browse-files-text"></span> </span> </label>
 		</div>
+		
 		<span class="cannot-upload-message"> <span class="material-icons-outlined">error</span> Please select a file first <span class="material-icons-outlined cancel-alert-button">cancel</span> </span>
 		<div class="file-block">
 			<div class="file-info"> <span class="material-icons-outlined file-icon">description</span> <span class="file-name"> </span> | <span class="file-size">  </span> </div>
 			<span class="material-icons remove-file-icon">delete</span>
 			<div class="progress-bar"> </div>
 		</div>
-		<button type="button" class="upload-button" onclick="processAudio()"> Process </button>
+        <select onchange="selectanimal()" id="animal" style="padding:5px;padding-left:10px; padding-right:10px;border: 1px solid whitesmoke;">
+			<option style="border-radius:10px ;" value=0>Cow</option>
+            <option value=1>Dog</option>
+        </select>
+		<button  type="button" class="upload-button" onclick="processAudio()"> Process </button>
 	</div>
 </form>
 <div id="waveform-container">
-    <button onclick="playstop()">play-pause</button>
+    <button onclick="playstop()" style="width: 100px;border-radius: 50px;height: 30px;box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px,
+rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;" >
+   Play-Pause
+</button>
     <div id="wave"></div>
 </div>
 </body>
 <script>
+	
     const waveformContainer = document.getElementById("waveform-container");
+    let animal = 0;
+    const selectanimal = ()=>{
+        animal = document.getElementById("animal").value;
+    }
+	console.log(animal);
     const wavesurfer = WaveSurfer.create({
                         container: waveformContainer,
                         waveColor: 'red',
@@ -181,11 +204,11 @@ body {
     function processAudio (){
             var fileInput = document.getElementById("audio-upload");
             var file = fileInput.files[0];
-
+			
             var formData = new FormData();
             formData.append("audio", file);
             var xhr = new XMLHttpRequest();
-            xhr.open("POST", "/process-audio", true);
+            xhr.open("POST", `/process-audio?value=${animal}` , true);
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4 && xhr.status === 200) {
                     // var audioPlayer = document.getElementById("audio-player");
@@ -200,12 +223,20 @@ body {
         }
         function playstop () {
         if (wavesurfer.isPlaying()){  
-        wavesurfer.setCurrentTime(0)
+        // wavesurfer.setCurrentTime(0)
         wavesurfer.pause();
         }
         else{
         wavesurfer.play();
         }
+		
 };
+function drop(e) {
+	e.stopPropagation();
+    e.preventDefault();
+	console.log("fsf");
+  const path = e.dataTransfer.files[0].path;
+    console.log(path);
+}
 </script>
 </html>
