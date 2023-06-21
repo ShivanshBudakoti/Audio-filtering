@@ -7,6 +7,7 @@
     <script src="https://unpkg.com/wavesurfer.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
+
 body {
 	margin: 0;
 	padding: 0;
@@ -39,13 +40,35 @@ body {
 	flex-direction: column;
 	box-shadow: rgba(0, 0, 0, 0.24) 0px 10px 20px, rgba(0, 0, 0, 0.28) 0px 6px 6px;
 }
+.drag-file-area::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    color: #ffffff;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .drag-file-area.dragging::before {
+    content: 'Drop it here!'; /* Display a message when dragging over the area */
+  }
+
+  .drag-file-area.dragging span.upload-icon {
+    font-size: 60px; /* Increase the upload icon size when dragging over the area */
+  }
 .drag-file-area {
-	border: 2px dashed whitesmoke;
+	border: 2px dashed #7b2cbf;
 	border-radius: 40px;
 	margin: 10px 0 15px;
 	padding: 30px 50px;
 	width: 350px;
 	text-align: center;
+}
+.drag-file-area.active{
+	border-color: #ff00ff;
 }
 .drag-file-area .upload-icon {
 	font-size: 50px;
@@ -140,7 +163,7 @@ body {
 	border: none;
 	border-radius: 20px;
 	/* margin: 10px; */
-	margin-top:35px ;
+	margin-top:75px ;
 	padding: 7.5px 50px;
 	cursor: pointer;
 }
@@ -155,16 +178,84 @@ body {
 #wave {
     margin-top: 20px;
 }
+
+
+        .upload-text {
+            font-size: 20px;
+            text-align: center;
+        }
+		.dropdown {
+            position: relative;
+            width: 200px;
+        }
+
+        .dropdown-select {
+            width: 100%;
+            padding: 10px;
+            background-color: transparent;
+            color: #fff;
+            border: 2px solid #fff;
+            border-radius: 5px;
+            appearance: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .dropdown-select:focus {
+            outline: none;
+        }
+
+        .dropdown-icon {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: #fff;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background-color: #222;
+            border: 2px solid #fff;
+            border-radius: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1;
+        }
+
+        .dropdown-option {
+            display: block;
+            padding: 10px;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .dropdown-option:hover {
+            background-color: #333;
+        }
+
+        .dropdown-option.selected {
+            background-color: #7b2cbf;
+        }
+.hidden{
+	display: none;
+}
+
     </style>
 </head>
 <body>
     <link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined" rel="stylesheet"/>
-<form class="form-container" enctype='multipart/form-data'>
-	<div class="upload-files-container" ondrop="drop(event);" droppale="true">
-		<div class="drag-file-area"  >
-			<span class="material-icons-outlined upload-icon"> file_upload </span>
-			<h3 class="dynamic-message"> Drag & drop any file here </h3>
-			<label class="label"> or <span class="browse-files"> <input type="file" class="default-file-input" id="audio-upload" accept="audio/*"/> <span class="browse-files-text"></span> </span> </label>
+<form class="form-container">
+	<div class="upload-files-container" ondrop="drop(event)" droppale="true" ondragenter="return false" ondragover="return false">
+		<div class="drag-file-area" ondrop="drop(event)" >
+			<span class="material-icons-outlined upload-icon" ondrop="drop(event)"> file_upload </span>
+			<h3 class="upload-text"> Drag & drop your audio file here <br>
+			<label class="label"> or <span class="browse-files"> <input type="file" class="default-file-input" id="audio-upload" accept="audio/*" value="adsf"/> <span class="browse-files-text"></span> </span> </label>
+		</h3>
 		</div>
 		
 		<span class="cannot-upload-message"> <span class="material-icons-outlined">error</span> Please select a file first <span class="material-icons-outlined cancel-alert-button">cancel</span> </span>
@@ -173,24 +264,31 @@ body {
 			<span class="material-icons remove-file-icon">delete</span>
 			<div class="progress-bar"> </div>
 		</div>
-        <select onchange="selectanimal()" id="animal" style="padding:5px;padding-left:10px; padding-right:10px;border: 1px solid whitesmoke;">
-			<option style="border-radius:10px ;" value=0>Cow</option>
-            <option value=1>Dog</option>
-        </select>
+        <div class="dropdown">
+			<select id="animal" class="dropdown-select">
+				<option value="0" style="background:#040714;;">Cow</option>
+				<option value="1" style="background:#040714; ;">Dog</option>
+			</select>
+			<span class="material-icons-outlined dropdown-icon">arrow_drop_down</span>
+			
+		</div>
 		<button  type="button" class="upload-button" onclick="processAudio()"> Process </button>
 	</div>
 </form>
 <div id="waveform-container">
-    <button onclick="playstop()" style="width: 100px;border-radius: 50px;height: 30px;box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px,
-rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;" >
+    
+    <div id="wave"></div>
+	<button onclick="playstop()" style="width: 100px;border-radius: 50px;height: 30px;box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px,
+rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;"
+class="hidden" id="playPause">
    Play-Pause
 </button>
-    <div id="wave"></div>
 </div>
 </body>
 <script>
 	
     const waveformContainer = document.getElementById("waveform-container");
+	const playPauseButton=document.getElementById('playPause');
     let animal = 0;
     const selectanimal = ()=>{
         animal = document.getElementById("animal").value;
@@ -201,6 +299,9 @@ rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px 
                         waveColor: 'red',
                         progressColor: 'rgb(100, 0, 100)',
                     })
+	wavesurfer.on('ready', function() {
+    playPauseButton.classList.remove('hidden');
+});
     function processAudio (){
             var fileInput = document.getElementById("audio-upload");
             var file = fileInput.files[0];
@@ -232,11 +333,25 @@ rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px 
 		
 };
 function drop(e) {
-	e.stopPropagation();
+    e.stopPropagation();
     e.preventDefault();
-	console.log("fsf");
-  const path = e.dataTransfer.files[0].path;
-    console.log(path);
-}
+    var length = e.dataTransfer.items.length;
+    for (var i = 0; i < length; i++) {
+        var entry = e.dataTransfer.items[i].webkitGetAsEntry();
+        if (entry.isDirectory) {
+            alert(entry);//here i need to get path of folder being dropped.
+        }
+    }
+	console.log(entry);
+	console.log(document.getElementById("audio-upload").value);
+	// document.getElementsByClassName("browse-files-text")=entry.fullPath;
+	const path=document.getElementById("audio-upload");
+	console.log(path);
+	console.log(path.value);
+    path.files=e.dataTransfer.files;
+};
+
+
+
 </script>
 </html>
